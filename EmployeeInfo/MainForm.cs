@@ -8,14 +8,15 @@ namespace EmployeeInfo
 {
     public partial class MainForm : Form
     {
-        private List<Employee> _employeesList = new List<Employee>();        
+        private List<Employee> _employeesList = new List<Employee>();
         private FileHelper<List<Employee>> _fileHelper = new FileHelper<List<Employee>>();
-        public bool isMaximize { 
-            get 
+        public bool isMaximize
+        {
+            get
             {
                 return Settings.Default.isMaximize;
-            } 
-            set 
+            }
+            set
             {
                 Settings.Default.isMaximize = value;
             }
@@ -36,15 +37,17 @@ namespace EmployeeInfo
             dataGridViewEmployees.Columns[nameof(Employee.HireDate)].HeaderText = "Data zatrudnienia";
             dataGridViewEmployees.Columns[nameof(Employee.FireDate)].HeaderText = "Data zwolnienia";
             dataGridViewEmployees.Columns[nameof(Employee.Salary)].HeaderText = "Wynagrodzenie";
-            dataGridViewEmployees.Columns[nameof(Employee.Comments)].HeaderText = "Uwagi";            
+            dataGridViewEmployees.Columns[nameof(Employee.Comments)].HeaderText = "Uwagi";
         }
 
         private void RefreshData()
         {
             _employeesList = _fileHelper.DeserializeFromFile(Program._path);
             dataGridViewEmployees.DataSource = _employeesList;
-        }
+            if (checkBoxHideFiredEmployees.Checked)
+                HideFiredEmployees();
 
+        }
         private void LoadUserSettings()
         {
             if (isMaximize)
@@ -61,11 +64,11 @@ namespace EmployeeInfo
         }
         private void FireEmployee()
         {
-           
+
             if (dataGridViewEmployees.SelectedRows.Count != 0)
             {
                 int selectedEmployeeId = (int)dataGridViewEmployees.SelectedRows[0].Cells[nameof(Employee.Id)].Value;
-                FireEmployeeForm fireEmployeeForm = new FireEmployeeForm(_employeesList,selectedEmployeeId);
+                FireEmployeeForm fireEmployeeForm = new FireEmployeeForm(_employeesList, selectedEmployeeId);
                 fireEmployeeForm.ShowDialog();
                 _fileHelper.SerializeToFile(Program._path, _employeesList);
                 RefreshData();
@@ -97,22 +100,25 @@ namespace EmployeeInfo
         private void checkBoxHideFiredEmployees_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBoxHideFiredEmployees.Checked)
-            {
-               List<Employee> workingEmployees = _employeesList.Where(x => x.FireDate == default).ToList();
-                dataGridViewEmployees.DataSource = workingEmployees;
-            }
+                HideFiredEmployees();
             else
                 dataGridViewEmployees.DataSource = _employeesList;
         }
 
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void HideFiredEmployees()
         {
-            if (WindowState==FormWindowState.Maximized)
-                isMaximize = true;
-            else
-                isMaximize = false;
-
-            Settings.Default.Save();
+            List<Employee> workingEmployees = _employeesList.Where(x => x.FireDate == default).ToList();
+            dataGridViewEmployees.DataSource = workingEmployees;
         }
+
+    private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+    {
+        if (WindowState == FormWindowState.Maximized)
+            isMaximize = true;
+        else
+            isMaximize = false;
+
+        Settings.Default.Save();
     }
+}
 }
