@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace EmployeeInfo
@@ -40,12 +36,14 @@ namespace EmployeeInfo
                 dateTimePickerFireDate.Visible = false;
                 selectedEmployee.FireDate = default;
             }
-            
         }
-
         private void dateTimePickerFireDate_ValueChanged(object sender, EventArgs e)
         {
-            selectedEmployee.FireDate = dateTimePickerFireDate.Value.Date;
+            DateTime fireDate = dateTimePickerFireDate.Value.Date;
+            if (fireDate<selectedEmployee.HireDate)
+                MessageBox.Show("Nie można zwolnić pracownika przed jego zatrudnieniem.");
+            else
+            selectedEmployee.FireDate = fireDate;
 
         }
     }
